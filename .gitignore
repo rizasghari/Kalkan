@@ -49,5 +49,6 @@ pkg/
 .DS_Store
 
 # Ignore the config.yaml file
-internal/cfg/config.yaml
+.../../config.yaml
+
 
