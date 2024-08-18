@@ -1,4 +1,4 @@
-package servers
+package server
 
 import (
 	"net/url"
@@ -8,9 +8,11 @@ import (
 )
 
 func (s *Server) RegisterProxies(origins []models.Origin) error {
-	// Iterating through the origins and registering them into the router.
 	for _, origin := range origins {
-		url, _ := url.Parse(origin.Url)
+		url, err := url.Parse(origin.Url)
+		if err != nil {
+			return err
+		}
 		proxy, err := proxy.New(url)
 		if err != nil {
 			return err

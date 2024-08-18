@@ -9,6 +9,6 @@ func New() *Handler {
 	return &Handler{}
 }
 
-func (h *Handler) Helath(w http.ResponseWriter, r *http.Request) {	
+func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {	
 	w.WriteHeader(http.StatusOK)
 }

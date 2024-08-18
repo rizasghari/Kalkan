@@ -31,17 +31,20 @@ func (p *Proxy) ProxyRequestHandler(
 	endpoint string,
 ) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("[ Kalkan ] Request received at %s at %s\n", r.URL, time.Now().UTC())
+		fmt.Printf("Kalkan: Request received at %s at %s\n", r.URL, time.Now().UTC())
+		
 		// Update the headers to allow for SSL redirection
 		r.URL.Host = url.Host
 		r.URL.Scheme = url.Scheme
 		r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 		r.Host = url.Host
-		//trim reverseProxyRoutePrefix
+
+		// Trim reverseProxyRoutePrefix
 		path := r.URL.Path
 		r.URL.Path = strings.TrimLeft(path, endpoint)
+
 		// Note that ServeHttp is non blocking and uses a go routine under the hood
-		fmt.Printf("[ Kalkan ] Redirecting request to %s at %s\n", r.URL, time.Now().UTC())
+		fmt.Printf("Kalkan: Redirecting request to %s at %s\n", r.URL, time.Now().UTC())
 		p.ReverseProxy.ServeHTTP(w, r)
 	}
 }
