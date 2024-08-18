@@ -34,6 +34,10 @@ func (s *Server) Run() error {
 		return err
 	}
 
+	// "localhost:8080" -> this will listen to connections from the loopback interface. 
+	// When running within a container, this will only accept connections coming from 
+	// within that container (or if you're running this in a k8s pod, within the same pod).
+	// ":8080" -> This will accept both loopback and external connections (external to the container).
 	addr := fmt.Sprintf(":%s", config.Server.Port)
 	log.Printf("server addr: %s", addr)
 	if err := http.ListenAndServe(addr, s.mux); err != nil {
