@@ -1,0 +1,7 @@
+services:
+  kalkan:
+    container_name: kalkan
+    build: .
+    ports:
+      - 8001:8001
+    entrypoint: ./kalkan
