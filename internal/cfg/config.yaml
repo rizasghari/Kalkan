@@ -1,0 +1,16 @@
+# Server Configuration
+server:
+  port: 8001
+  host: "localhost"
+
+# Origin Configuration
+origins:
+  - name: Server1
+    edge: /server1
+    url: "http://localhost:9007"
+  - name: Server2
+    edge: /server2
+    url: "http://localhost:9008"
+  - name: Server3
+    edge: /server3
+    url: "http://localhost:9009"
