@@ -1,6 +1,6 @@
 # Server Configuration
 server:
-  port: 8001
+  port: 8080
   host: "localhost"
 
 # Origin Configuration
