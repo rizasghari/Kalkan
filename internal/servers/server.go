@@ -2,6 +2,7 @@ package servers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/rizasghari/kalkan/internal/cfg"
@@ -24,6 +25,8 @@ func New(
 }
 
 func (s *Server) Run() error {
+	log.Printf("Starting http server")
+
 	// load configurations from config file
 	config, err := cfg.NewConfiguration()
 	if err != nil {
@@ -39,7 +42,9 @@ func (s *Server) Run() error {
 	}
 
 	// Running proxy server
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port), s.mux); err != nil {
+	addr := fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port)
+	log.Printf("server addr: %s", addr)
+	if err := http.ListenAndServe(addr, s.mux); err != nil {
 		return fmt.Errorf("could not start the server: %v", err)
 	}
 

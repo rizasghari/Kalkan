@@ -19,10 +19,8 @@ type configuration struct {
 var Config *configuration
 
 func NewConfiguration() (*configuration, error) {
-	viper.AddConfigPath("./configs")
-	viper.AddConfigPath("./")
-	viper.AddConfigPath("./../configs")
-	viper.AddConfigPath("./../../configs")
+	viper.AddConfigPath("./internal/cfg")
+	viper.AddConfigPath("$HOME")
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AutomaticEnv()
