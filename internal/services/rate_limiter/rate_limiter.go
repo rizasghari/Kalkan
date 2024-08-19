@@ -61,20 +61,14 @@ func (rl *RateLimiter) RateLimiterMiddleware(next http.Handler) http.Handler {
 }
 
 func (rl *RateLimiter) ResetRateLimiter() {
-	// rl.mu.Lock()
-	// defer rl.mu.Unlock()
 	rl.history = make(map[string]*types.Clinet)
 }
 
 func (rl *RateLimiter) ResetClientHistory(client *types.Clinet) {
-	// rl.mu.Lock()
-	// defer rl.mu.Unlock()
 	client.Count = 0
 	client.LastAccess = time.Now()
 }
 
 func (rl *RateLimiter) Block(client *types.Clinet) {
-	// rl.mu.Lock()
-	// defer rl.mu.Unlock()
 	client.BlockedUntil = time.Now().Add(rl.block)
 }
