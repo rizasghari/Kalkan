@@ -5,7 +5,7 @@ A simple, experimental, configurable, standalone reverse proxy service with buil
 
 # Configuration Guide
 
-This guide provides an overview of the configuration options available in the `config.yaml` file used by the reverse proxy service with rate limiting. Below, you'll find descriptions for each section and the parameters you can adjust.
+This guide provides an overview of the configuration options available in the `config.yaml` (located in the `internal/cfg` folder) file used by the reverse proxy service with rate limiting. Below, you'll find descriptions for each section and the parameters you can adjust.
 
 ## Configuration Structure
 
