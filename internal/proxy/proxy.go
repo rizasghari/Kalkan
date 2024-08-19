@@ -30,9 +30,10 @@ func (p *Proxy) ProxyRequestHandler(
 	url *url.URL,
 	endpoint string,
 ) func(http.ResponseWriter, *http.Request) {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Kalkan: Request received at %s at %s\n", r.URL, time.Now().UTC())
-		
+
 		// Update the headers to allow for SSL redirection
 		r.URL.Host = url.Host
 		r.URL.Scheme = url.Scheme

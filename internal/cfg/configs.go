@@ -4,21 +4,26 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/rizasghari/kalkan/internal/models"
+	"github.com/rizasghari/kalkan/internal/types"
 	"github.com/spf13/viper"
 )
 
-type configuration struct {
+type Configuration struct {
 	Server struct {
-		Host string
 		Port string
 	}
-	Origins []models.Origin
+	Origins []types.Origin
+	RL      struct {
+		Enabled   bool
+		Timeframe int
+		Allowed   int
+		Block     int
+	}
 }
 
-var Config *configuration
+var Config *Configuration
 
-func NewConfiguration() (*configuration, error) {
+func NewConfiguration() (*Configuration, error) {
 	viper.AddConfigPath("./internal/cfg")
 	viper.AddConfigPath("$HOME")
 	viper.SetConfigName("config")

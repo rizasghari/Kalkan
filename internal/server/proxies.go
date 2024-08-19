@@ -1,13 +1,15 @@
 package server
 
 import (
+	"net/http"
 	"net/url"
 
-	"github.com/rizasghari/kalkan/internal/models"
 	"github.com/rizasghari/kalkan/internal/proxy"
+	rl "github.com/rizasghari/kalkan/internal/services/rate_limiter"
+	"github.com/rizasghari/kalkan/internal/types"
 )
 
-func (s *Server) RegisterProxies(origins []models.Origin) error {
+func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLimiter) error {
 	for _, origin := range origins {
 		url, err := url.Parse(origin.Url)
 		if err != nil {
@@ -17,7 +19,14 @@ func (s *Server) RegisterProxies(origins []models.Origin) error {
 		if err != nil {
 			return err
 		}
-		s.mux.HandleFunc(origin.Edge, proxy.ProxyRequestHandler(url, origin.Edge))
+
+		proxyHandler := http.HandlerFunc(proxy.ProxyRequestHandler(url, origin.Edge))
+		if rateLimiter != nil {
+			rateLimitedProxyHandler := rateLimiter.RateLimiterMiddleware(proxyHandler)
+			s.mux.Handle(origin.Edge, rateLimitedProxyHandler)
+		} else {
+			s.mux.Handle(origin.Edge, proxyHandler)
+		}
 	}
 
 	return nil

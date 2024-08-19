@@ -1,4 +1,4 @@
-package models
+package types
 
 type Origin struct {
 	Name string `json:"name"`
