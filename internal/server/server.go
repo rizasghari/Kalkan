@@ -13,9 +13,10 @@ import (
 type Server struct {
 	mux     *http.ServeMux
 	handler *handlers.Handler
+	cfg     *cfg.Configuration
 }
 
-func New(handler *handlers.Handler) *Server {
+func New(handler *handlers.Handler, cfg *cfg.Configuration) *Server {
 	mux := http.NewServeMux()
 	return &Server{
 		mux:     mux,
@@ -23,33 +24,24 @@ func New(handler *handlers.Handler) *Server {
 	}
 }
 
-func (s *Server) Run() error {
-	config, err := cfg.NewConfiguration()
-	if err != nil {
-		return err
-	}
-
+func (s *Server) Start() error {
 	var rateLimiter *rl.RateLimiter
-	if config.RL.Enabled {
+	if s.cfg.RL.Enabled {
 		log.Println("Rate limiter enabled")
-		rateLimiter = rl.New(config)
+		rateLimiter = rl.New(s.cfg)
 	}
 
 	s.RegisterRoutes(rateLimiter)
 
-	if err := s.RegisterProxies(config.Origins, rateLimiter); err != nil {
+	if err := s.RegisterProxies(s.cfg.Origins, rateLimiter); err != nil {
 		return err
 	}
 
-	// "localhost:8080" -> this will listen to connections from the loopback interface.
-	// When running within a container, this will only accept connections coming from
-	// within that container (or if you're running this in a k8s pod, within the same pod).
-	// ":8080" -> This will accept both loopback and external connections (external to the container).
-	addr := fmt.Sprintf(":%s", config.Server.Port)
-	log.Printf("server addr: %s", addr)
+	addr := fmt.Sprintf(":%s", s.cfg.Server.Port)
 	if err := http.ListenAndServe(addr, s.mux); err != nil {
 		return fmt.Errorf("could not start the server: %v", err)
 	}
+	log.Printf("KALKAN HTTP Server started on port %s", addr)
 
 	return nil
 }

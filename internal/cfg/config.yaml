@@ -6,7 +6,7 @@ server:
 origins:
   - name: Server1
     edge: /server1
-    url: "https://buluro.com"
+    url: "https://localhost:9007"
   - name: Server2
     edge: /server2
     url: "http://localhost:9008"

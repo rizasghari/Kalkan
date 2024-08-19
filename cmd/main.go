@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	if err := kalkan.New().Run(); err != nil {
+	if err := kalkan.Run(); err != nil {
 		log.Fatalf("error running kalkan: %v", err)
 	}
 }
