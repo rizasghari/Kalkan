@@ -35,9 +35,9 @@ origins:
     url: "https://sample.com"
   ...
 ```
-- name: A friendly name for the backend server. This is used for identification and logging purposes.
-- edge: The endpoint path that the proxy listens to. When a request matches this path, it will be forwarded to the corresponding url.
-- url: The actual URL of the backend server where requests will be forwarded.
+- `name`: A friendly name for the backend server. This is used for identification and logging purposes.
+- `edge`: The endpoint path that the proxy listens to. When a request matches this path, it will be forwarded to the corresponding url.
+- `url`: The actual URL of the backend server where requests will be forwarded.
 
 ### 3. Rate Limiter Configuration
 This section allows you to configure the rate-limiting functionality, which helps protect your backend servers by controlling the rate of incoming requests.
@@ -48,7 +48,7 @@ rl:
   timeframe: 10
   block: 20
 ```
-`enabled`: A boolean flag (true or false) that determines whether the rate limiter is active. If set to true, the rate limiter will be enforced.
-`allowed`: The number of requests allowed per client within the specified timeframe.
-`timeframe`: The duration (in seconds) within which the number of requests specified in allowed can be made. After this timeframe, the request count is reset.
-`block`: The duration (in seconds) for which the client is blocked from making further requests if they exceed the allowed limit.
+- `enabled`: A boolean flag (true or false) that determines whether the rate limiter is active. If set to true, the rate limiter will be enforced.
+- `allowed`: The number of requests allowed per client within the specified timeframe.
+- `timeframe`: The duration (in seconds) within which the number of requests specified in allowed can be made. After this timeframe, the request count is reset.
+- `block`: The duration (in seconds) for which the client is blocked from making further requests if they exceed the allowed limit.
