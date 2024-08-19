@@ -52,3 +52,29 @@ rl:
 - `allowed`: The number of requests allowed per client within the specified timeframe.
 - `timeframe`: The duration (in seconds) within which the number of requests specified in allowed can be made. After this timeframe, the request count is reset.
 - `block`: The duration (in seconds) for which the client is blocked from making further requests if they exceed the allowed limit.
+
+# How to Run the Project
+
+This project is Dockerized and can be easily run using Docker Compose. Follow the steps below to get started.
+
+### Prerequisites
+
+- Make sure you have Docker and Docker Compose installed on your machine.
+
+## Running the Project
+
+1. **Clone the Repository:**
+
+   First, clone the repository to your local machine:
+
+   ```bash
+   git clone https://github.com/rizasghari/Kalkan.git
+   cd your-folder-name
+   ```
+
+2. **Build and Run the Containers:**
+   ```bash
+   sudo docker compose up --build
+   ```
+   This command will build the Docker images and start the services defined in the docker-compose.yml file.
+   
