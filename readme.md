@@ -23,7 +23,7 @@ This section defines the configuration settings for the server that will run the
 server:
   port: 8080
 ```
-port: Specifies the port number on which the server will listen for incoming requests. Adjust this value to change the listening port.
+- `port`: Specifies the port number on which the server will listen for incoming requests. Adjust this value to change the listening port.
 
 
 ### 2. Origin Configuration
