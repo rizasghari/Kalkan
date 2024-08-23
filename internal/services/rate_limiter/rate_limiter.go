@@ -2,13 +2,13 @@ package rl
 
 import (
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/rizasghari/kalkan/internal/cfg"
 	"github.com/rizasghari/kalkan/internal/services/redis"
 	"github.com/rizasghari/kalkan/internal/types"
+	"github.com/rizasghari/kalkan/internal/utils"
 )
 
 type RateLimiter struct {
@@ -33,15 +33,18 @@ func New(cfg *cfg.Configuration, redisService *redis.RedisService) *RateLimiter 
 
 func (rl *RateLimiter) RateLimiterMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientIP := strings.Split(r.RemoteAddr, ":")[0]
-		if _, found := rl.history[clientIP]; !found {
-			rl.history[clientIP] = &types.Clinet{Count: 0, LastAccess: time.Now()}
+		clientIP, err := utils.GetIP(r.RemoteAddr)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		if _, found := rl.history[clientIP.String()]; !found {
+			rl.history[clientIP.String()] = &types.Clinet{Count: 0, LastAccess: time.Now()}
 		}
 
 		rl.mu.Lock()
 		defer rl.mu.Unlock()
 
-		client := rl.history[clientIP]
+		client := rl.history[clientIP.String()]
 
 		if client.BlockedUntil.After(time.Now()) {
 			http.Error(w, "You are temporarily blocked due to too many requests", http.StatusTooManyRequests)
