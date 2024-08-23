@@ -53,6 +53,18 @@ rl:
 - `timeframe`: The duration (in seconds) within which the number of requests specified in allowed can be made. After this timeframe, the request count is reset.
 - `block`: The duration (in seconds) for which the client is blocked from making further requests if they exceed the allowed limit.
 
+### 4. Redis Configuration
+The Redis service is an integral part of this application, providing caching and other key-value storage capabilities. Below is the configuration format you should use to connect the application to your Redis instance.
+```yaml
+redis:
+  url: kalkan-redis:6379 
+  password: "" 
+  db: 0 
+```
+- `url`: The url field specifies the Redis server's address. If you are using Docker, this will typically be the name of your Redis container followed by the port 6379, which is the default Redis port.
+- `password`: The password field is used for authentication with the Redis server. If your Redis instance does not require a password, leave this field empty (`""`)
+- `db`: The db field specifies which Redis database to use. Redis supports multiple databases, numbered from 0 to 15 by default. Setting db: 0 means the application will use the default database.
+
 # How to Run the Project
 
 This project is Dockerized and can be easily run using Docker Compose. Follow the steps below to get started.
