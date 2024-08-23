@@ -1,7 +1,9 @@
 package rl
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"sync"
@@ -17,7 +19,6 @@ type RateLimiter struct {
 	timeframe time.Duration
 	block     time.Duration
 	allowed   int
-	history   map[string]*types.Clinet
 	mu        sync.Mutex
 	cache     cache.Cacher
 	cfg       *cfg.Configuration
@@ -28,7 +29,6 @@ func New(cfg *cfg.Configuration, cache cache.Cacher) *RateLimiter {
 		timeframe: time.Duration(cfg.RL.Timeframe * int(time.Second)),
 		block:     time.Duration(cfg.RL.Block * int(time.Second)),
 		allowed:   cfg.RL.Allowed,
-		history:   make(map[string]*types.Clinet),
 		mu:        sync.Mutex{},
 		cache:     cache,
 		cfg:       cfg,
@@ -45,7 +45,7 @@ func (rl *RateLimiter) RateLimiterCacherMiddleware(next http.Handler) http.Handl
 		key := clientIP.String()
 		log.Printf("key: %s", key)
 
-		var client types.Clinet = types.Clinet{
+		var client = &types.Clinet{
 			Count:      0,
 			LastAccess: time.Now(),
 		}
@@ -73,53 +73,12 @@ func (rl *RateLimiter) RateLimiterCacherMiddleware(next http.Handler) http.Handl
 			if !ok {
 				http.Error(w, "error reading cache: clinetData type assertion to string", http.StatusInternalServerError)
 			}
-			err = json.Unmarshal([]byte(clinetStr), &client)
+			err = json.Unmarshal([]byte(clinetStr), client)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 			log.Printf("client: %+v", client)
 		}
-
-		// if _, found := rl.history[clientIP.String()]; !found {
-		// 	rl.history[clientIP.String()] = &types.Clinet{Count: 0, LastAccess: time.Now()}
-		// }
-
-		// client := rl.history[clientIP.String()]
-
-		// if client.BlockedUntil.After(time.Now()) {
-		// 	http.Error(w, "You are temporarily blocked due to too many requests", http.StatusTooManyRequests)
-		// 	return
-		// }
-
-		// if time.Since(client.LastAccess) > rl.timeframe {
-		// 	rl.ResetClientHistory(client)
-		// }
-
-		// if client.Count >= rl.allowed {
-		// 	rl.Block(client)
-		// 	http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
-		// 	return
-		// }
-
-		// client.Count++
-		// next.ServeHTTP(w, r)
-	})
-}
-
-func (rl *RateLimiter) RateLimiterMapperMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		clientIP, err := utils.GetIP(r.RemoteAddr)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		if _, found := rl.history[clientIP.String()]; !found {
-			rl.history[clientIP.String()] = &types.Clinet{Count: 0, LastAccess: time.Now()}
-		}
-
-		rl.mu.Lock()
-		defer rl.mu.Unlock()
-
-		client := rl.history[clientIP.String()]
 
 		if client.BlockedUntil.After(time.Now()) {
 			http.Error(w, "You are temporarily blocked due to too many requests", http.StatusTooManyRequests)
@@ -127,29 +86,108 @@ func (rl *RateLimiter) RateLimiterMapperMiddleware(next http.Handler) http.Handl
 		}
 
 		if time.Since(client.LastAccess) > rl.timeframe {
-			rl.ResetClientHistory(client)
+			client, err = rl.ResetClientHistory(r.Context(), key)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		}
 
 		if client.Count >= rl.allowed {
-			rl.Block(client)
+			client, err = rl.Block(r.Context(), client, key)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 			http.Error(w, "Rate limit exceeded", http.StatusTooManyRequests)
 			return
 		}
 
-		client.Count++
+		err = rl.IncreaseClientUsage(r.Context(), key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (rl *RateLimiter) ResetRateLimiter() {
-	rl.history = make(map[string]*types.Clinet)
+func (rl *RateLimiter) ResetRateLimiter(ctx context.Context) {
+	rl.cache.ResetAll(ctx)
 }
 
-func (rl *RateLimiter) ResetClientHistory(client *types.Clinet) {
+func (rl *RateLimiter) ResetClientHistory(ctx context.Context, key string) (*types.Clinet, error) {
+	var client types.Clinet
+	clinetData, err := rl.cache.Get(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	clinetStr, ok := clinetData.(string)
+	if !ok {
+		return nil, errors.New("error reading cache: clinetData type assertion to string")
+	}
+	err = json.Unmarshal([]byte(clinetStr), &client)
+	if err != nil {
+		return nil, err
+	}
+
 	client.Count = 0
 	client.LastAccess = time.Now()
+	value, err := json.Marshal(client)
+	if err != nil {
+		return nil, err
+	}
+	err = rl.cache.Set(
+		ctx,
+		key,
+		value,
+		time.Duration(rl.cfg.Redis.Expiration*int(time.Second)),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &client, nil
 }
 
-func (rl *RateLimiter) Block(client *types.Clinet) {
+func (rl *RateLimiter) Block(ctx context.Context, client *types.Clinet, key string) (*types.Clinet, error) {
 	client.BlockedUntil = time.Now().Add(rl.block)
+	value, err := json.Marshal(client)
+	if err != nil {
+		return nil, err
+	}
+	err = rl.cache.Set(
+		ctx,
+		key,
+		value,
+		time.Duration(rl.cfg.Redis.Expiration*int(time.Second)),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
+}
+
+func (rl *RateLimiter) IncreaseClientUsage(ctx context.Context, key string) error {
+	var client types.Clinet
+	clinetData, err := rl.cache.Get(ctx, key)
+	if err != nil {
+		return err
+	}
+	clinetStr, ok := clinetData.(string)
+	if !ok {
+		return errors.New("error reading cache: clinetData type assertion to string")
+	}
+	err = json.Unmarshal([]byte(clinetStr), &client)
+	if err != nil {
+		return err
+	}
+
+	client.Count += 1
+	value, err := json.Marshal(client)
+	if err != nil {
+		return err
+	}
+	return rl.cache.Set(
+		ctx,
+		key,
+		value,
+		time.Duration(rl.cfg.Redis.Expiration*int(time.Second)),
+	)
 }

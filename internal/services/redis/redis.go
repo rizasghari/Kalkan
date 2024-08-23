@@ -33,3 +33,7 @@ func (rs *RedisService) Get(ctx context.Context, key string) (any, error) {
 func (rs *RedisService) Delete(ctx context.Context, key string) error {
 	return rs.client.Del(ctx, key).Err()
 }
+
+func (rs *RedisService) ResetAll(ctx context.Context) error {
+	return rs.client.FlushAll(ctx).Err()
+}
