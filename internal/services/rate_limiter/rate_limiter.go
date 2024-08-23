@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rizasghari/kalkan/internal/cfg"
+	"github.com/rizasghari/kalkan/internal/services/redis"
 	"github.com/rizasghari/kalkan/internal/types"
 )
 
@@ -16,15 +17,17 @@ type RateLimiter struct {
 	allowed   int
 	history   map[string]*types.Clinet
 	mu        sync.Mutex
+	redisService *redis.RedisService
 }
 
-func New(cfg *cfg.Configuration) *RateLimiter {
+func New(cfg *cfg.Configuration, redisService *redis.RedisService) *RateLimiter {
 	return &RateLimiter{
 		timeframe: time.Duration(cfg.RL.Timeframe * int(time.Second)),
 		block:     time.Duration(cfg.RL.Block * int(time.Second)),
 		allowed:   cfg.RL.Allowed,
 		history:   make(map[string]*types.Clinet),
 		mu:        sync.Mutex{},
+		redisService: redisService,
 	}
 }
 

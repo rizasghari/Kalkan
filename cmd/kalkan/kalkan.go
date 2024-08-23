@@ -6,16 +6,21 @@ import (
 	"github.com/rizasghari/kalkan/internal/cfg"
 	"github.com/rizasghari/kalkan/internal/handlers"
 	"github.com/rizasghari/kalkan/internal/server"
+	"github.com/rizasghari/kalkan/internal/services/redis"
 )
 
 func Run() error {
 	log.Printf("Starting ⛊ KALKAN ⛊ Reverse Proxy Server")
+
 	cfg, err := cfg.NewConfiguration()
 	if err != nil {
 		return err
 	}
-	if err := server.
-		New(handlers.New(), cfg).
+
+	redisService := redis.Initialize(cfg)
+	handler := handlers.New()
+
+	if err := server.New(handler, cfg, redisService).
 		Start(); err != nil {
 		return err
 	}

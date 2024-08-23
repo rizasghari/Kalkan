@@ -5,13 +5,13 @@ server:
 # Origin Configuration
 origins:
   - name: Server1
-    edge: /server1
+    edge: /server1/
     url: "https://localhost:9007"
   - name: Server2
-    edge: /server2
+    edge: /server2/
     url: "http://localhost:9008"
   - name: Server3
-    edge: /server3
+    edge: /server3/
     url: "http://localhost:9009"
 
 # Rate Limiter Configuration
@@ -20,3 +20,8 @@ rl:
   allowed: 5
   timeframe: 10
   block: 20
+
+redis:
+  url: kalkan-redis:6379 # Redis docker container URL
+  password: "" # no password set
+  db: 0 # use default DB

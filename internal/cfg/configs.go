@@ -19,6 +19,11 @@ type Configuration struct {
 		Allowed   int
 		Block     int
 	}
+	Redis struct {
+		Url      string
+		Password string
+		DB       int
+	}
 }
 
 var Config *Configuration

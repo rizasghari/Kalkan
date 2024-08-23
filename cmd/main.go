@@ -8,6 +8,6 @@ import (
 
 func main() {
 	if err := kalkan.Run(); err != nil {
-		log.Fatalf("error running kalkan: %v", err)
+		log.Printf("error running kalkan: %v", err)
 	}
 }

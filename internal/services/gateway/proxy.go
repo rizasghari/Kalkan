@@ -1,4 +1,4 @@
-package proxy
+package gateway
 
 import (
 	"fmt"
@@ -11,22 +11,22 @@ import (
 	"github.com/rizasghari/kalkan/internal/errs"
 )
 
-type Proxy struct {
+type Gateway struct {
 	// ReverseProxy is an HTTP Handler that takes an incoming request and
 	// sends it to another server, proxying the response back to the client.
 	ReverseProxy *httputil.ReverseProxy
 }
 
-func New(target *url.URL) (*Proxy, error) {
+func New(target *url.URL) (*Gateway, error) {
 	// Todo: Add more validations
 	if target == nil || target.String() == "" {
 		return nil, errs.ErrInvalidTargetUrl
 	}
 	rp := httputil.NewSingleHostReverseProxy(target)
-	return &Proxy{ReverseProxy: rp}, nil
+	return &Gateway{ReverseProxy: rp}, nil
 }
 
-func (p *Proxy) ProxyRequestHandler(
+func (p *Gateway) ProxyRequestHandler(
 	url *url.URL,
 	endpoint string,
 ) func(http.ResponseWriter, *http.Request) {

@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/rizasghari/kalkan/internal/proxy"
+	"github.com/rizasghari/kalkan/internal/services/gateway"
 	rl "github.com/rizasghari/kalkan/internal/services/rate_limiter"
 	"github.com/rizasghari/kalkan/internal/types"
 )
@@ -15,7 +15,7 @@ func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLim
 		if err != nil {
 			return err
 		}
-		proxy, err := proxy.New(url)
+		proxy, err := gateway.New(url)
 		if err != nil {
 			return err
 		}
