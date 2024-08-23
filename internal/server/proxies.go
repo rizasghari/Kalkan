@@ -22,7 +22,7 @@ func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLim
 
 		proxyHandler := http.HandlerFunc(proxy.ProxyRequestHandler(url, origin.Edge))
 		if rateLimiter != nil {
-			rateLimitedProxyHandler := rateLimiter.RateLimiterMiddleware(proxyHandler)
+			rateLimitedProxyHandler := rateLimiter.RateLimiterCacherMiddleware(proxyHandler)
 			s.mux.Handle(origin.Edge, rateLimitedProxyHandler)
 		} else {
 			s.mux.Handle(origin.Edge, proxyHandler)

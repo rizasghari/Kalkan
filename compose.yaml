@@ -5,7 +5,6 @@ services:
     ports:
       - 8080:8080
     entrypoint: ./kalkan
-    network_mode: bridge
     depends_on:
       kalkan-redis:
         condition: service_healthy

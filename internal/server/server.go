@@ -7,28 +7,28 @@ import (
 
 	"github.com/rizasghari/kalkan/internal/cfg"
 	"github.com/rizasghari/kalkan/internal/handlers"
+	"github.com/rizasghari/kalkan/internal/services/cache"
 	rl "github.com/rizasghari/kalkan/internal/services/rate_limiter"
-	"github.com/rizasghari/kalkan/internal/services/redis"
 )
 
 type Server struct {
-	mux          *http.ServeMux
-	handler      *handlers.Handler
-	cfg          *cfg.Configuration
-	redisService *redis.RedisService
+	mux     *http.ServeMux
+	handler *handlers.Handler
+	cfg     *cfg.Configuration
+	cache   cache.Cacher
 }
 
 func New(
 	handler *handlers.Handler,
 	cfg *cfg.Configuration,
-	redisService *redis.RedisService,
+	cache cache.Cacher,
 ) *Server {
 	mux := http.NewServeMux()
 	return &Server{
-		mux:          mux,
-		handler:      handler,
-		cfg:          cfg,
-		redisService: redisService,
+		mux:     mux,
+		handler: handler,
+		cfg:     cfg,
+		cache:   cache,
 	}
 }
 
@@ -36,7 +36,7 @@ func (s *Server) Start() error {
 	var rateLimiter *rl.RateLimiter
 	if s.cfg.RL.Enabled {
 		log.Println("Rate limiter enabled")
-		rateLimiter = rl.New(s.cfg, s.redisService)
+		rateLimiter = rl.New(s.cfg, s.cache)
 	}
 
 	s.RegisterRoutes(rateLimiter)

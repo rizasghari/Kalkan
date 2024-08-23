@@ -5,14 +5,14 @@ server:
 # Origin Configuration
 origins:
   - name: Server1
-    edge: /server1/
-    url: "https://localhost:9007"
+    edge: /server1
+    url: "https://api.sampleapis.com/avatar/info"
   - name: Server2
-    edge: /server2/
-    url: "http://localhost:9008"
+    edge: /server2
+    url: "https://api.sampleapis.com/beers/ale"
   - name: Server3
-    edge: /server3/
-    url: "http://localhost:9009"
+    edge: /server3
+    url: "https://api.sampleapis.com/csscolornames/colors"
 
 # Rate Limiter Configuration
 rl:
@@ -25,3 +25,4 @@ redis:
   url: kalkan-redis:6379 # Redis docker container URL
   password: "" # no password set
   db: 0 # use default DB
+  expiration: 3600

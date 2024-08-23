@@ -20,9 +20,10 @@ type Configuration struct {
 		Block     int
 	}
 	Redis struct {
-		Url      string
-		Password string
-		DB       int
+		Url        string
+		Password   string
+		DB         int
+		Expiration int
 	}
 }
 
