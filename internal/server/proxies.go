@@ -5,11 +5,12 @@ import (
 	"net/url"
 
 	"github.com/rizasghari/kalkan/internal/services/gateway"
+	"github.com/rizasghari/kalkan/internal/services/geolocation"
 	rl "github.com/rizasghari/kalkan/internal/services/rate_limiter"
 	"github.com/rizasghari/kalkan/internal/types"
 )
 
-func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLimiter) error {
+func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLimiter, geoLocation *geolocation.GeoLocation) error {
 	for _, origin := range origins {
 		url, err := url.Parse(origin.Url)
 		if err != nil {
@@ -22,7 +23,7 @@ func (s *Server) RegisterProxies(origins []types.Origin, rateLimiter *rl.RateLim
 
 		proxyHandler := http.HandlerFunc(proxy.ProxyRequestHandler(url, origin.Edge))
 		if rateLimiter != nil {
-			rateLimitedProxyHandler := rateLimiter.RateLimiterCacherMiddleware(proxyHandler)
+			rateLimitedProxyHandler := rateLimiter.RateLimiterCacherMiddleware(proxyHandler, geoLocation)
 			s.mux.Handle(origin.Edge, rateLimitedProxyHandler)
 		} else {
 			s.mux.Handle(origin.Edge, proxyHandler)

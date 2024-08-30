@@ -8,27 +8,31 @@ import (
 	"github.com/rizasghari/kalkan/internal/cfg"
 	"github.com/rizasghari/kalkan/internal/handlers"
 	"github.com/rizasghari/kalkan/internal/services/cache"
+	"github.com/rizasghari/kalkan/internal/services/geolocation"
 	rl "github.com/rizasghari/kalkan/internal/services/rate_limiter"
 )
 
 type Server struct {
-	mux     *http.ServeMux
-	handler *handlers.Handler
-	cfg     *cfg.Configuration
-	cache   cache.Cacher
+	mux         *http.ServeMux
+	handler     *handlers.Handler
+	cfg         *cfg.Configuration
+	cache       cache.Cacher
+	geoLocation *geolocation.GeoLocation
 }
 
 func New(
 	handler *handlers.Handler,
 	cfg *cfg.Configuration,
 	cache cache.Cacher,
+	geoLocation *geolocation.GeoLocation,
 ) *Server {
 	mux := http.NewServeMux()
 	return &Server{
-		mux:     mux,
-		handler: handler,
-		cfg:     cfg,
-		cache:   cache,
+		mux:         mux,
+		handler:     handler,
+		cfg:         cfg,
+		cache:       cache,
+		geoLocation: geoLocation,
 	}
 }
 
@@ -39,9 +43,9 @@ func (s *Server) Start() error {
 		rateLimiter = rl.New(s.cfg, s.cache)
 	}
 
-	s.RegisterRoutes(rateLimiter)
+	s.RegisterRoutes(rateLimiter, s.geoLocation)
 
-	if err := s.RegisterProxies(s.cfg.Origins, rateLimiter); err != nil {
+	if err := s.RegisterProxies(s.cfg.Origins, rateLimiter, s.geoLocation); err != nil {
 		return err
 	}
 

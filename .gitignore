@@ -51,4 +51,5 @@ pkg/
 # Ignore the config.yaml file
 internal/cfg/*.yaml
 
-
+# Ignore geolocation database files
+internal/geolocation/db

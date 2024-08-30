@@ -11,6 +11,7 @@ import (
 
 	"github.com/rizasghari/kalkan/internal/cfg"
 	"github.com/rizasghari/kalkan/internal/services/cache"
+	"github.com/rizasghari/kalkan/internal/services/geolocation"
 	"github.com/rizasghari/kalkan/internal/types"
 	"github.com/rizasghari/kalkan/internal/utils"
 )
@@ -35,8 +36,14 @@ func New(cfg *cfg.Configuration, cache cache.Cacher) *RateLimiter {
 	}
 }
 
-func (rl *RateLimiter) RateLimiterCacherMiddleware(next http.Handler) http.Handler {
+func (rl *RateLimiter) RateLimiterCacherMiddleware(next http.Handler, geoLocation *geolocation.GeoLocation) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		location, err := geoLocation.GetLocation(r.RemoteAddr)
+		if err != nil {
+			log.Printf("error getting location: %v", err)
+		}
+		log.Printf("location for %s IP Address: %+v", r.RemoteAddr, location)
+
 		clientIP, err := utils.GetIP(r.RemoteAddr)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
